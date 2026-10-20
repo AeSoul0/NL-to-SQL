@@ -71,8 +71,8 @@ ENV/
 env.bak/
 venv.bak/
 
-# Poetry
-poetry.lock
+# Windows folder metadata
+desktop.ini
 
 # Docker
 .dockerignore
