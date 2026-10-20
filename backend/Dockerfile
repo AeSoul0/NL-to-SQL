@@ -6,16 +6,17 @@ FROM python:3.9-slim AS base
 RUN apt-get update && apt-get install -y build-essential libmariadb-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-RUN pip install poetry
+# Versione fissata: l'ultima Poetry che gira su Python 3.9.
+RUN pip install "poetry==2.2.1"
 # Forza Poetry a creare .venv nella directory del progetto
 RUN poetry config virtualenvs.in-project true
 
-COPY pyproject.toml ./
+# Il poetry.lock è nel repository: il build installa versioni fissate, senza risolverle di nuovo.
+COPY pyproject.toml poetry.lock ./
 
 # --- Fase 2: Immagine di Test ---
 # Questa fase eredita dalla base e installa TUTTE le dipendenze.
 FROM base AS test
-RUN poetry lock
 RUN poetry install --no-root
 # CORREZIONE: Aggiunge il percorso del virtual environment al PATH del container
 ENV PATH="/app/.venv/bin:$PATH"
@@ -26,7 +27,6 @@ CMD ["pytest", "-v"]
 # --- Fase 3: Immagine di Produzione ---
 # Questa fase crea l'immagine finale che andrà in esecuzione per il servizio 'backend'.
 FROM base AS production
-RUN poetry lock
 # Installa SOLO le dipendenze di produzione
 RUN poetry install --no-root --only main
 # Copia solo il codice sorgente necessario per l'esecuzione.

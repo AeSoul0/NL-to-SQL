@@ -2,13 +2,14 @@
 # Immagine base per installare le dipendenze.
 FROM python:3.9-slim AS builder
 WORKDIR /app
-RUN pip install poetry
+# Versione fissata: l'ultima Poetry che gira su Python 3.9.
+RUN pip install "poetry==2.2.1"
 # CORREZIONE FINALE: Forza Poetry a creare .venv nella directory del progetto
 RUN poetry config virtualenvs.in-project true
 
-COPY pyproject.toml ./
+# Il poetry.lock è nel repository: il build installa versioni fissate, senza risolverle di nuovo.
+COPY pyproject.toml poetry.lock ./
 
-RUN poetry lock
 RUN poetry install --no-root --only main
 
 # --- Fase 2: Production ---
